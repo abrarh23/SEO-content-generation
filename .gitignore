@@ -1,0 +1,4 @@
+.env
+*.ipynb
+data
+qureos-engineering.json
