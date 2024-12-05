@@ -349,7 +349,7 @@ def create_google_doc_with_formatting(docs_service, drive_service, job_title: st
     # Grant public read access to the document
     public_permission = {
         'type': 'anyone',
-        'role': 'reader'  # Change to 'writer' for public edit access
+        'role': 'reader'
     }
     drive_service.permissions().create(
         fileId=document_id,
