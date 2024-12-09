@@ -11,6 +11,7 @@ import time
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from googleapiclient.discovery import build
+import html
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -487,7 +488,7 @@ def create_google_doc_with_formatting(docs_service, drive_service, job_title: st
                                     'endIndex': current_index
                                 },
                                 'textStyle': text_style,
-                                'fields': '*'
+                                'fields': 'bold,italic,underline,strikethrough,link(url),foregroundColor'
                             }
                         }
 
@@ -606,6 +607,80 @@ def create_google_doc_with_formatting(docs_service, drive_service, job_title: st
     
     return document_id
 
+def prepare_data_for_upload(content: dict) -> list:    
+    # Helper function to convert a list to HTML-encoded unordered list
+    def convert_list_html(class_list: list) -> str:
+        if isinstance(class_list, list):
+            # Ensure each item is a string (if it's a list, join the items first)
+            html_encoded_list = []
+            for item in class_list:
+                if isinstance(item, list):  # Handle if item is a list
+                    item = ", ".join(map(str, item))  # Join list items into a string
+                html_encoded_list.append(html.escape(str(item)))  # Escape the string
+            html_list = "<ul>\n"
+            for item in html_encoded_list:
+                html_list += f"  <li>{item}</li>\n"
+            html_list += "</ul>"
+            return html_list
+        return "N/A"
+
+    # Helper function to extract data for a given question type
+    def extract_seniority_level_data(seniority_level: list, question_type: str):
+        extracted_data = []
+        if seniority_level and isinstance(seniority_level, dict):
+            question_data = seniority_level.get(question_type, {})
+            if isinstance(question_data, dict):
+                    extracted_data.append(question_data.get("interview_question", "N/A"))
+                    extracted_data.append(question_data.get("model_answer", "N/A"))
+                    extracted_data.append(question_data.get("example", "N/A"))
+                    extracted_data.append(convert_list_html(question_data.get("what_hiring_managers_should_pay_attention_to")))
+            if isinstance(question_data, list):  # If it's a list, handle each item separately
+                for item in question_data:
+                    extracted_data.append(item.get("interview_question", "N/A"))
+                    extracted_data.append(item.get("model_answer", "N/A"))
+                    extracted_data.append(item.get("example", "N/A"))
+                    extracted_data.append(convert_list_html(item.get("what_hiring_managers_should_pay_attention_to")))
+            return extracted_data
+
+    # Main function to create sheet data
+    def create_sheet_data(content):
+        converted_content = []
+        for level, seniority_level in content.items():
+            # Extract generic questions, soft skill questions, and behavioral questions
+            # converted_content.append("")  # Job title (empty)
+            converted_content.extend(extract_seniority_level_data(seniority_level, "generic_questions"))
+            converted_content.extend(extract_seniority_level_data(seniority_level, "soft_skill_question"))
+            converted_content.extend(extract_seniority_level_data(seniority_level, "behavioral_question"))
+            # converted_content.append("")  # Google Doc Link (empty)
+        return converted_content
+
+    return create_sheet_data(content)
+
+
+def push_to_gs(sheet: gspread.Worksheet, sheet_data: list) -> None:
+    # Clear existing data and insert new data
+    sheet.append_rows(sheet_data)
+
+def push_to_docs(docs_service, document_id, replacements):
+    requests = []
+    for placeholder, new_text in replacements.items():
+        requests.append({
+            'replaceAllText': {
+                'containsText': {
+                    'text': '{{' + placeholder + '}}',  # Ensure this matches the placeholder format in your template
+                    'matchCase': True,
+                },
+                'replaceText': new_text  # The replacement text
+            }
+        })
+    try:
+        # Execute the batch update to replace text in Google Docs
+        result = docs_service.documents().batchUpdate(
+            documentId=document_id, body={'requests': requests}).execute()
+        return result
+    except Exception as e:
+        print("An error occurred:", e)
+
 if __name__ == "__main__":
     time_start = time.time()
     job_title = "data analyst"
@@ -616,14 +691,31 @@ if __name__ == "__main__":
     print("Completion tokens:", completion_tokens)
 
     validated_data = InterviewQuestions(**content)
-    
 
+    sheet_data = prepare_data_for_upload(content)
+    sheet_data.insert(0, f'{job_title}')
+    sheet_data.append('')
+
+    push_df = pd.DataFrame([sheet_data], columns=['job_title', 'entry_level_generic_questions_interview_question_1', 'entry_level_generic_questions_model_answer_1',	'entry_level_generic_questions_example_1',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'entry_level_generic_questions_interview_question_2',	'entry_level_generic_questions_model_answer_2',	'entry_level_generic_questions_example_2',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'entry_level_generic_questions_interview_question_3',	'entry_level_generic_questions_model_answer_3',	'entry_level_generic_questions_example_3',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'entry_level_soft_skill_question_interview_question',	'entry_level_soft_skill_question_model_answer',	'entry_level_soft_skill_question_example',	'entry_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'entry_level_behavioral_question_interview_question',	'entry_level_behavioral_question_model_answer',	'entry_level_behavioral_question_example',	'entry_level_behavioral_question_what_hiring_managers_should_pay_attention_to',	'mid_level_generic_questions_interview_question_1',	'mid_level_generic_questions_model_answer_1',	'mid_level_generic_questions_example_1',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'mid_level_generic_questions_interview_question_2',	'mid_level_generic_questions_model_answer_2',	'mid_level_generic_questions_example_2',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'mid_level_generic_questions_interview_question_3',	'mid_level_generic_questions_model_answer_3',	'mid_level_generic_questions_example_3',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'mid_level_soft_skill_question_interview_question',	'mid_level_soft_skill_question_model_answer',	'mid_level_soft_skill_question_example',	'mid_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'mid_level_behavioral_question_interview_question',	'mid_level_behavioral_question_model_answer',	'mid_level_behavioral_question_example',	'mid_level_behavioral_question_what_hiring_managers_should_pay_attention_to',	'senior_level_generic_questions_interview_question_1',	'senior_level_generic_questions_model_answer_1',	'senior_level_generic_questions_example_1',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'senior_level_generic_questions_interview_question_2',	'senior_level_generic_questions_model_answer_2',	'senior_level_generic_questions_example_2',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'senior_level_generic_questions_interview_question_3',	'senior_level_generic_questions_model_answer_3',	'senior_level_generic_questions_example_3',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'senior_level_soft_skill_question_interview_question',	'senior_level_soft_skill_question_model_answer',	'senior_level_soft_skill_question_example',	'senior_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'senior_level_behavioral_question_interview_question',	'senior_level_behavioral_question_model_answer',	'senior_level_behavioral_question_example',	'senior_level_behavioral_question_what_hiring_managers_should_pay_attention_to', 'link'])     
+    sheet_data = push_df.values.tolist() 
+    
     sheet, docs_service, drive_service = connect_to_google_sheets_docs()
     template_content, template_document_setup, template_header_footer = get_template_structure(docs_service)
     doc_document_id = create_google_doc_with_formatting(docs_service, drive_service, job_title, template_content, template_document_setup, template_header_footer)
 
+    # Update Google Doc
+    replacements = {col: push_df[col].iloc[0] for col in push_df.columns}
+    push_to_docs(docs_service, doc_document_id, replacements)
+
     google_doc_link = "https://docs.google.com/document/d/" + doc_document_id + "/copy"
-    print(google_doc_link)
+    print("Google doc link:", google_doc_link)
+    sheet_data[0][-1] = google_doc_link  # Assuming the link should be in the last column of the row
+
+    # Push to Google Sheets
+    print("Sheet data:", sheet_data)
+    push_to_gs(sheet, sheet_data)
+    
+    print("Data has been pushed successfully")   
 
     time_end = time.time()
     print("Time elapsed:", round(time_end-time_start, 2),"secs")

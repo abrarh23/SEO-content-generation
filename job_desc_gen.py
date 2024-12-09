@@ -125,10 +125,10 @@ def prepare_data_for_upload(content: dict, key_responsibilities_html: str, skill
         convert_to_string(content.get("kpis", "N/A")),
         convert_to_string(content["kpis_focus"][0].get("focus_area", "KPI")) if len(content["kpis_focus"]) > 0 else "",
         convert_to_string(content["kpis_focus"][0].get("description", "N/A")) if len(content["kpis_focus"]) > 0 else "",
-        convert_to_string(content["kpis_focus"][1].get("focus_area", "KPI")) if len(content["kpis_focus"]) > 1 else "",
-        convert_to_string(content["kpis_focus"][1].get("description", "N/A")) if len(content["kpis_focus"]) > 1 else "",
-        convert_to_string(content["kpis_focus"][2].get("focus_area", "KPI")) if len(content["kpis_focus"]) > 2 else "",
-        convert_to_string(content["kpis_focus"][2].get("description", "N/A")) if len(content["kpis_focus"]) > 2 else "",
+        convert_to_string(content["kpis_focus"][1].get("focus_area", "KPI")) if len(content["kpis_focus"]) > 0 else "",
+        convert_to_string(content["kpis_focus"][1].get("description", "N/A")) if len(content["kpis_focus"]) > 0 else "",
+        convert_to_string(content["kpis_focus"][2].get("focus_area", "KPI")) if len(content["kpis_focus"]) > 0 else "",
+        convert_to_string(content["kpis_focus"][2].get("description", "N/A")) if len(content["kpis_focus"]) > 0 else "",
         convert_to_string(content.get("team_structure", {}).get("reports_to", "N/A")),
         convert_to_string(content.get("team_structure", {}).get("collaborates_with", "N/A")),
         convert_to_string(content.get("team_structure", {}).get("leads", "N/A")),
@@ -382,7 +382,7 @@ def push_to_docs(docs_service, document_id, replacements):
 if __name__ == "__main__":
     all_job_titles = read_input_csv()
 
-    for idx, each_job_title in all_job_titles[283:].iterrows():
+    for idx, each_job_title in all_job_titles.iterrows():
         start = time.time()
         response = get_gen_content(each_job_title["clean_job_titles"])  # Pass the correct value here
         content, prompt_tokens, completion_tokens = response
