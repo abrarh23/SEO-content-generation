@@ -46,6 +46,11 @@ class InterviewQuestions(BaseModel):
     mid_level: JobLevelQuestions
     senior_level: JobLevelQuestions
 
+def read_input_csv() -> pd.DataFrame:
+    all_job_titles = pd.read_csv(r".\data\Job Titles - Job Titles - Final.csv")
+    all_job_titles = all_job_titles.apply(lambda x: x.str.title()).copy()
+    return all_job_titles
+
 def connect_to_openai() -> OpenAI:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") 
     client = OpenAI(api_key=OPENAI_API_KEY)
@@ -533,64 +538,6 @@ def create_google_doc_with_formatting(docs_service, drive_service, job_title: st
             }
         }
         requests.append(document_style_request)
-    
-    # # Copy headers and footers from source document
-    # if template_header_footer:
-    #     if 'headers' in template_header_footer:
-    #         for header_id, header_content in template_header_footer['headers'].items():
-    #             requests.append({
-    #                 'createHeader': {
-    #                     'type': 'DEFAULT'
-    #                 }
-    #             })
-    #             requests.append({
-    #                 'insertText': {
-    #                     'location': {'segmentId': header_id, 'index': 0},
-    #                     'text': header_content.get('text','')
-    #                 }
-    #             })
-    #             if 'textStyle' in header_content:
-    #                 text_style = header_content['textStyle']
-    #                 style_request = {
-    #                     'updateTextStyle': {
-    #                         'range': {
-    #                             'segmentId': header_id,
-    #                             'startIndex': 0,
-    #                             'endIndex': len(header_content.get('text', ''))
-    #                         },
-    #                         'textStyle': text_style,
-    #                         'fields': '*'
-    #                     }
-    #                 }
-    #                 requests.append(style_request)
-    #     if 'footers' in template_header_footer:
-    #         for footer_id, footer_content in template_header_footer['footers'].items():
-    #             requests.append({
-    #                 'createFooter': {
-    #                     'type': 'DEFAULT'
-    #                 }
-    #             })
-    #             requests.append({
-    #                 'insertText': {
-    #                     'location': {'segmentId': footer_id, 'index': 0},
-    #                     'text': footer_content.get('text','')
-    #                 }
-    #             })
-    #             if 'textStyle' in footer_content:
-    #                 text_style = footer_content['textStyle']
-    #                 style_request = {
-    #                     'updateTextStyle': {
-    #                         'range': {
-    #                             'segmentId': footer_id,
-    #                             'startIndex': 0,
-    #                             'endIndex': len(footer_content.get('text'))
-    #                         },
-    #                         'textStyle': text_style,
-    #                         'fields': '*'
-    #                     }
-    #                 }
-    #                 requests.append(style_request)
-    print(requests)
     # Apply the requests to the new document
     docs_service.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
 
@@ -682,40 +629,42 @@ def push_to_docs(docs_service, document_id, replacements):
         print("An error occurred:", e)
 
 if __name__ == "__main__":
-    time_start = time.time()
-    job_title = "data analyst"
-    response = get_openai_resp(job_title)
-    content, prompt_tokens, completion_tokens = response
-    print(json.dumps(content, indent=4))
-    print("Prompt tokens:", prompt_tokens)
-    print("Completion tokens:", completion_tokens)
+    job_titles_df = read_input_csv()
 
-    validated_data = InterviewQuestions(**content)
+    for _, row in job_titles_df[:4].iterrows():
+        time_start = time.time()
+        response = get_openai_resp(row['job_titles'])
+        content, prompt_tokens, completion_tokens = response
+        print(json.dumps(content, indent=4))
+        print("Prompt tokens:", prompt_tokens)
+        print("Completion tokens:", completion_tokens)
 
-    sheet_data = prepare_data_for_upload(content)
-    sheet_data.insert(0, f'{job_title}')
-    sheet_data.append('')
+        validated_data = InterviewQuestions(**content)
 
-    push_df = pd.DataFrame([sheet_data], columns=['job_title', 'entry_level_generic_questions_interview_question_1', 'entry_level_generic_questions_model_answer_1',	'entry_level_generic_questions_example_1',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'entry_level_generic_questions_interview_question_2',	'entry_level_generic_questions_model_answer_2',	'entry_level_generic_questions_example_2',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'entry_level_generic_questions_interview_question_3',	'entry_level_generic_questions_model_answer_3',	'entry_level_generic_questions_example_3',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'entry_level_soft_skill_question_interview_question',	'entry_level_soft_skill_question_model_answer',	'entry_level_soft_skill_question_example',	'entry_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'entry_level_behavioral_question_interview_question',	'entry_level_behavioral_question_model_answer',	'entry_level_behavioral_question_example',	'entry_level_behavioral_question_what_hiring_managers_should_pay_attention_to',	'mid_level_generic_questions_interview_question_1',	'mid_level_generic_questions_model_answer_1',	'mid_level_generic_questions_example_1',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'mid_level_generic_questions_interview_question_2',	'mid_level_generic_questions_model_answer_2',	'mid_level_generic_questions_example_2',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'mid_level_generic_questions_interview_question_3',	'mid_level_generic_questions_model_answer_3',	'mid_level_generic_questions_example_3',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'mid_level_soft_skill_question_interview_question',	'mid_level_soft_skill_question_model_answer',	'mid_level_soft_skill_question_example',	'mid_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'mid_level_behavioral_question_interview_question',	'mid_level_behavioral_question_model_answer',	'mid_level_behavioral_question_example',	'mid_level_behavioral_question_what_hiring_managers_should_pay_attention_to',	'senior_level_generic_questions_interview_question_1',	'senior_level_generic_questions_model_answer_1',	'senior_level_generic_questions_example_1',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'senior_level_generic_questions_interview_question_2',	'senior_level_generic_questions_model_answer_2',	'senior_level_generic_questions_example_2',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'senior_level_generic_questions_interview_question_3',	'senior_level_generic_questions_model_answer_3',	'senior_level_generic_questions_example_3',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'senior_level_soft_skill_question_interview_question',	'senior_level_soft_skill_question_model_answer',	'senior_level_soft_skill_question_example',	'senior_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'senior_level_behavioral_question_interview_question',	'senior_level_behavioral_question_model_answer',	'senior_level_behavioral_question_example',	'senior_level_behavioral_question_what_hiring_managers_should_pay_attention_to', 'link'])     
-    sheet_data = push_df.values.tolist() 
-    
-    sheet, docs_service, drive_service = connect_to_google_sheets_docs()
-    template_content, template_document_setup, template_header_footer = get_template_structure(docs_service)
-    doc_document_id = create_google_doc_with_formatting(docs_service, drive_service, job_title, template_content, template_document_setup, template_header_footer)
+        sheet_data = prepare_data_for_upload(content)
+        sheet_data.insert(0, row['job_titles'])
+        sheet_data.append('')
 
-    # Update Google Doc
-    replacements = {col: push_df[col].iloc[0] for col in push_df.columns}
-    push_to_docs(docs_service, doc_document_id, replacements)
+        push_df = pd.DataFrame([sheet_data], columns=['job_title', 'entry_level_generic_questions_interview_question_1', 'entry_level_generic_questions_model_answer_1',	'entry_level_generic_questions_example_1',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'entry_level_generic_questions_interview_question_2',	'entry_level_generic_questions_model_answer_2',	'entry_level_generic_questions_example_2',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'entry_level_generic_questions_interview_question_3',	'entry_level_generic_questions_model_answer_3',	'entry_level_generic_questions_example_3',	'entry_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'entry_level_soft_skill_question_interview_question',	'entry_level_soft_skill_question_model_answer',	'entry_level_soft_skill_question_example',	'entry_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'entry_level_behavioral_question_interview_question',	'entry_level_behavioral_question_model_answer',	'entry_level_behavioral_question_example',	'entry_level_behavioral_question_what_hiring_managers_should_pay_attention_to',	'mid_level_generic_questions_interview_question_1',	'mid_level_generic_questions_model_answer_1',	'mid_level_generic_questions_example_1',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'mid_level_generic_questions_interview_question_2',	'mid_level_generic_questions_model_answer_2',	'mid_level_generic_questions_example_2',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'mid_level_generic_questions_interview_question_3',	'mid_level_generic_questions_model_answer_3',	'mid_level_generic_questions_example_3',	'mid_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'mid_level_soft_skill_question_interview_question',	'mid_level_soft_skill_question_model_answer',	'mid_level_soft_skill_question_example',	'mid_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'mid_level_behavioral_question_interview_question',	'mid_level_behavioral_question_model_answer',	'mid_level_behavioral_question_example',	'mid_level_behavioral_question_what_hiring_managers_should_pay_attention_to',	'senior_level_generic_questions_interview_question_1',	'senior_level_generic_questions_model_answer_1',	'senior_level_generic_questions_example_1',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_1',	'senior_level_generic_questions_interview_question_2',	'senior_level_generic_questions_model_answer_2',	'senior_level_generic_questions_example_2',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_2',	'senior_level_generic_questions_interview_question_3',	'senior_level_generic_questions_model_answer_3',	'senior_level_generic_questions_example_3',	'senior_level_generic_questions_what_hiring_managers_should_pay_attention_to_3',	'senior_level_soft_skill_question_interview_question',	'senior_level_soft_skill_question_model_answer',	'senior_level_soft_skill_question_example',	'senior_level_soft_skill_question_what_hiring_managers_should_pay_attention_to',	'senior_level_behavioral_question_interview_question',	'senior_level_behavioral_question_model_answer',	'senior_level_behavioral_question_example',	'senior_level_behavioral_question_what_hiring_managers_should_pay_attention_to', 'link'])     
+        sheet_data = push_df.values.tolist() 
+        
+        sheet, docs_service, drive_service = connect_to_google_sheets_docs()
+        template_content, template_document_setup, template_header_footer = get_template_structure(docs_service)
+        doc_document_id = create_google_doc_with_formatting(docs_service, drive_service, row['job_titles'], template_content, template_document_setup, template_header_footer)
 
-    google_doc_link = "https://docs.google.com/document/d/" + doc_document_id + "/copy"
-    print("Google doc link:", google_doc_link)
-    sheet_data[0][-1] = google_doc_link  # Assuming the link should be in the last column of the row
+        # Update Google Doc
+        replacements = {col: push_df[col].iloc[0] for col in push_df.columns}
+        push_to_docs(docs_service, doc_document_id, replacements)
 
-    # Push to Google Sheets
-    print("Sheet data:", sheet_data)
-    push_to_gs(sheet, sheet_data)
-    
-    print("Data has been pushed successfully")   
+        google_doc_link = "https://docs.google.com/document/d/" + doc_document_id + "/copy"
+        print("Google doc link:", google_doc_link)
+        sheet_data[0][-1] = google_doc_link  # Assuming the link should be in the last column of the row
 
-    time_end = time.time()
-    print("Time elapsed:", round(time_end-time_start, 2),"secs")
+        # Push to Google Sheets
+        print("Sheet data:", sheet_data)
+        push_to_gs(sheet, sheet_data)
+        
+        print("Data has been pushed successfully")   
+
+        time_end = time.time()
+        print("Time elapsed:", round(time_end-time_start, 2),"secs")
