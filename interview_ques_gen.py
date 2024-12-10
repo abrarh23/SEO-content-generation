@@ -661,7 +661,6 @@ if __name__ == "__main__":
         sheet_data[0][-1] = google_doc_link  # Assuming the link should be in the last column of the row
 
         # Push to Google Sheets
-        print("Sheet data:", sheet_data)
         push_to_gs(sheet, sheet_data)
         
         print("Data has been pushed successfully")   
