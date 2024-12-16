@@ -631,7 +631,7 @@ def push_to_docs(docs_service, document_id, replacements):
 if __name__ == "__main__":
     job_titles_df = read_input_csv()
 
-    for _, row in job_titles_df[:4].iterrows():
+    for _, row in job_titles_df.iterrows():
         time_start = time.time()
         response = get_openai_resp(row['job_titles'])
         content, prompt_tokens, completion_tokens = response
