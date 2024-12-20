@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import json
 import traceback
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel
 from typing import List, Dict
 import pandas as pd
 import time

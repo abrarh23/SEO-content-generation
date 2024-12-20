@@ -1,4 +1,6 @@
 .env
 *.ipynb
 data
-qureos-engineering.json
+*.json
+*.js
+node_modules
