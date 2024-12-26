@@ -4,3 +4,5 @@ data
 *.json
 *.js
 node_modules
+rough.py
+*.sql
