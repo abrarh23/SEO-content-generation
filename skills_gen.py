@@ -11,111 +11,114 @@ import gspread
 load_dotenv()
 
 response_format = {
-    "type": "json_schema",
-    "json_schema": {
-    "name": "skills_schema",
-    "strict": True,
-    "schema": {
-        "type": "object",
-        "properties": {
-            "introduction": {
-                "type": "object",
-                "properties": {
-                    "overview": {"type": "string"},
-                    "impact_on_success": {"type": "string"},
-                    "adaptation_importance": {"type": "string"}
-                },
-                "required": ["overview", "impact_on_success", "adaptation_importance"],
-                "additionalProperties": False
-            },
-            "skill_progression": {
-                "type": "object",
-                "properties": {
-                    "beginner": {
-                        "type": "object",
-                        "properties": {
-                            "skills": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
-                            "examples": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
-                            "action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
-                        },
-                        "required": ["skills", "examples", "action_steps"],
-                        "additionalProperties": False
-                    },
-                    "intermediate": {
-                        "type": "object",
-                        "properties": {
-                            "skills": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
-                            "examples": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
-                            "action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
-                        },
-                        "required": ["skills", "examples", "action_steps"],
-                        "additionalProperties": False
-                    },
-                    "advanced": {
-                        "type": "object",
-                        "properties": {
-                            "skills": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
-                            "examples": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
-                            "action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
-                        },
-                        "required": ["skills", "examples", "action_steps"],
-                        "additionalProperties": False
-                    }
-                },
-                "required": ["beginner", "intermediate", "advanced"],
-                "additionalProperties": False
-            },
-            "top_skills_2025": {
-                "type": "object",
-                "properties": {
-                    "technical_skills": {"type": "array", "items": {"type": "string"}},
-                    "soft_skills": {"type": "array", "items": {"type": "string"}},
-                    "industry_trends": {"type": "array", "items": {"type": "string"}},
-                    "future_requirements": {"type": "array", "items": {"type": "string"}}
-                },
-                "required": ["technical_skills", "soft_skills", "industry_trends", "future_requirements"],
-                "additionalProperties": False
-            },
-            "top_influencers": {
-                "type": "array",
-                "items": {
+        "type": "json_schema",
+        "json_schema": {
+        "name": "skills_schema",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "introduction": {
                     "type": "object",
                     "properties": {
-                        "name": {"type": "string"},
-                        "expertise": {"type": "string"},
-                        "why_follow": {"type": "string"},
-                        "industry_impact": {"type": "string"}
+                        "overview": {"type": "string"},
+                        "impact_on_success": {"type": "string"},
+                        "adaptation_importance": {"type": "string"}
                     },
-                    "required": ["name", "expertise", "why_follow", "industry_impact"],
+                    "required": ["overview", "impact_on_success", "adaptation_importance"],
                     "additionalProperties": False
                 },
-            },
-            "learning_resources": {
-                "type": "array",
-                "items": {
+                "skill_progression": {
                     "type": "object",
                     "properties": {
-                        "website": {"type": "string"},
-                        "offerings": {"type": "array", "items": {"type": "string"}},
-                        "specializations": {"type": "array", "items": {"type": "string"}},
-                        "why_recommended": {"type": "string"}
+                        "beginner": {
+                            "type": "object",
+                            "properties": {
+                                "skills": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
+                                "examples_with_action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
+                                # "action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
+                            },
+                            "required": ["skills", "examples_with_action_steps"],
+                            "additionalProperties": False
+                        },
+                        "intermediate": {
+                            "type": "object",
+                            "properties": {
+                                "skills": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
+                                "examples_with_action_steps": {"type": "array", "items": {"type": "string"}, "min":4,
+                                "max":4}
+                                # "action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
+                            },
+                            "required": ["skills", "examples_with_action_steps"],
+                            "additionalProperties": False
+                        },
+                        "advanced": {
+                            "type": "object",
+                            "properties": {
+                                "skills": {"type": "array", "items": {"type": "string"}, "min":4, "max":4},
+                                "examples_with_action_steps": {"type": "array", "items": {"type": "string"}, "min":4,
+                                "max":4}
+                                # "action_steps": {"type": "array", "items": {"type": "string"}, "min":4, "max":4}
+                            },
+                            "required": ["skills", "examples_with_action_steps"],
+                            "additionalProperties": False
+                        }
                     },
-                    "required": ["website", "offerings", "specializations", "why_recommended"],
+                    "required": ["beginner", "intermediate", "advanced"],
                     "additionalProperties": False
                 },
+                "top_skills_2025": {
+                    "type": "object",
+                    "properties": {
+                        "technical_skills": {"type": "array", "items": {"type": "string"}},
+                        "soft_skills": {"type": "array", "items": {"type": "string"}},
+                        "industry_trends": {"type": "array", "items": {"type": "string"}},
+                        "future_requirements": {"type": "array", "items": {"type": "string"}}
+                    },
+                    "required": ["technical_skills", "soft_skills", "industry_trends", "future_requirements"],
+                    "additionalProperties": False
+                },
+                "top_influencers": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "expertise": {"type": "string"},
+                            "why_follow": {"type": "string"}
+                        },
+                        "min": 1,
+                        "max": 4,
+                        "required": ["name", "expertise", "why_follow"],
+                        "additionalProperties": False
+                    },
+                },
+                "learning_resources": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "course_link": {"type": "string"},
+                            # "offerings": {"type": "array", "items": {"type": "string"}},
+                            # "specializations": {"type": "array", "items": {"type": "string"}},
+                            "why_recommended": {"type": "string"}
+                        },
+                        "required": ["course_link", "why_recommended"],
+                        "additionalProperties": False
+                    },
+                }
+            },
+            "required": [
+                "introduction",
+                "skill_progression",
+                "top_skills_2025",
+                "top_influencers",
+                "learning_resources"
+            ],
+            "additionalProperties": False
             }
-        },
-        "required": [
-            "introduction",
-            "skill_progression",
-            "top_skills_2025",
-            "top_influencers",
-            "learning_resources"
-        ],
-        "additionalProperties": False
         }
     }
-}
 
 # connect to openai
 def connect_to_openai():
@@ -130,7 +133,7 @@ def connect_to_google_sheets_docs() -> gspread.Worksheet:
     
     # Load the credentials from the JSON key file
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        r"D:\Qureos\AllWork\Modules\qureos-a1006.json", 
+        r"/home/abdrafay/AllWork/Qureos/AllWork/Modules/qureos-a1006.json", 
         scope
     )
     
@@ -138,7 +141,7 @@ def connect_to_google_sheets_docs() -> gspread.Worksheet:
     client = gspread.authorize(credentials)
     spreadsheet_url = "https://docs.google.com/spreadsheets/d/1b3s7oy_9KLLrB46qxCVAQ4pLm4-T3RFMU-msGkovp40/edit?usp=sharing"
     spreadsheet = client.open_by_url(spreadsheet_url)
-    sheet = spreadsheet.worksheet("Python(Skills)")
+    sheet = spreadsheet.worksheet("Python (Skills)")
     
     return sheet
 
@@ -163,10 +166,9 @@ The response should be organized in a clear JSON format with the following secti
 - Industry adaptation importance
 
 2. Skill Progression
-- Beginner level skills with examples
-- Intermediate level skills with examples
-- Advanced level skills with examples
-- Actionable steps for progression at each level
+- Beginner level skills with examples with actionable steps
+- Intermediate level skills with examples with actionable steps
+- Advanced level skills with examples with actionable steps
 
 3. Top Skills for 2025
 - Technical skills specific to the profession
@@ -178,10 +180,9 @@ The response should be organized in a clear JSON format with the following secti
 - List of 5 influential professionals
 - Their areas of expertise
 - Reasons to follow them
-- Their impact on the industry
 
 5. Learning Resources
-- List of 5 top websites/platforms
+- List of link of minimum 1 and maximum 2 top courses
 - Types of courses/certifications offered
 - Specialization areas
 - Why they are recommended
@@ -237,8 +238,8 @@ def process_skill_progression(data: dict) -> dict:
         for i in range(0, len(value['skills'])):
             dic = {}
             dic['name'] = value['skills'][i]
-            dic['example'] = value['examples'][i]
-            dic['action_steps'] = value['action_steps'][i]
+            dic['examples_with_action_steps'] = value['examples_with_action_steps'][i]
+            # dic['action_steps'] = value['action_steps'][i]
             # dic[value['skills'][i]] = [value['examples'][i], value['action_steps'][i]] 
             obj.append(dic)
         data['skill_progression'][key] = obj
@@ -275,15 +276,27 @@ for skill in jobtitles:
     output_dict = flatten_dict(output_dict)
     
     df = convert_to_dataframe(output_dict)
+
+    # Read the output.csv into out_df
+    out_df = pd.read_csv("output.csv")
+
+    # Concatenate both DataFrames
+    out_df_combined = pd.concat([out_df, df], ignore_index=True, sort=True)
+
+    # Reorder the columns to match the column order of out_df
+    out_df_combined = out_df_combined[out_df.columns.tolist()]
+
+    # Fill missing values with None
+    out_df_combined = out_df_combined.where(pd.notnull(out_df_combined), None)
     
     sheet = connect_to_google_sheets_docs()
     
-    push_to_google_sheet(sheet, df)
+    push_to_google_sheet(sheet, out_df_combined)
     
     # append to csv as well
     if count == 0:
-        df.to_csv("skills.csv", index=False)
-    df.to_csv("skills.csv", mode='a', header=False, index=False)
+        out_df_combined.to_csv("skills.csv", index=False)
+    out_df_combined.to_csv("skills.csv", mode='a', header=False, index=False)
     count += 1
     
     print("Data has been pushed successfully")   
